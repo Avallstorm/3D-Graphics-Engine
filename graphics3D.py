@@ -1,5 +1,5 @@
 import pygame, sys, math
-from Objects3D import Cube3D, Rect3D, Rock3D, Groundtile3D, tile
+from objects3D import Cube3D, Rect3D, Rock3D, Groundtile3D, tile
 
 #===============================================================================
 #Helper functions
@@ -127,11 +127,35 @@ def drawobjects(objs):
 #Camera Class
 
 class Cam:
+	"""Camera dictating where objects will be drawn based on position and
+			angle.
+
+
+	__init__
+
+	Initializes a camera instance
+
+		Args:
+			pos   (:obj:`tuple` of :obj:`float` len = 3): position of the camera
+				in 3D space
+			rot   (:obj:`tuple` of :obj:`float` len = 2): rotational position 
+				of camera in 3D space
+
+		Returns: (:obj: Camera)
+
+	"""
 	def __init__(self,pos=(0,0,0),rot=(0,0)):
 		self.pos = list(pos)
 		self.rot = list(rot)
 
 	def events(self,event):
+		""" uses mouse movement events to rotate the camera
+
+		Side effect: Mutates self
+
+		Returns: None
+
+		"""
 		if event.type == pygame.MOUSEMOTION:
 			x,y = event.rel
 			x/=400
@@ -140,6 +164,13 @@ class Cam:
 			self.rot[1] += x
 
 	def update(self,dt,key):
+		""" Updates location of camera based on key input
+
+		Side effect: Mutates self
+
+		Returns: None
+
+		"""
 		s = dt * 10
 
 		if key[pygame.K_q]: self.pos[1] -= s
@@ -161,28 +192,44 @@ class Cam:
 			self.pos[2] -= x
 
 #===============================================================================
+#Data
 
+meshes = []
+
+#Data for multiple cubes simulation
+if "cubes" in sys.argv:
+	n = int(sys.argv[-1])
+	for i in range(n):
+		for j in range(n):
+			meshes += [Cube3D(1,(i,0,j)).all]
+
+#Data for rock simulation
+elif "rock" in sys.argv:
+	rock1 = Rock3D((1,0,1)).all
+	rock2 = Rock3D((3,0,-1)).all
+	meshes += [rock1, rock2]
+
+
+#===============================================================================
 def main():
+	# Pulling global variables
 	global cam, cx, cy, width, height, screen
 
+	# Checking if there is no valid arguments
+	if len(meshes) == 0:
+		print("No arguments recongnized")
+		pygame.quit()
+		sys.exit()
+
+	# Setup for pygame screen
 	pygame.init()
 	width,height = 800,800
 	cx,cy = width//2,height//2
-
 	screen = pygame.display.set_mode((width,height))
-
 	clock = pygame.time.Clock()
-
-	ground = []
-
-	for i in range(3):
-		for j in range(3):
-			ground += [Cube3D(1,(i,0,j)).all]
-
-
-	test = Rect3D((0,0,0),1,1,1)
 	cam = Cam((0,-1,-5))
 
+	# Setup for pygame inputs
 	pygame.event.get()
 	pygame.mouse.get_rel()
 	pygame.mouse.set_visible(0)
@@ -191,6 +238,7 @@ def main():
 	while True:
 		dt = clock.tick()/1000
 
+		#pygame event loop
 		for event in pygame.event.get():
 			if event.type == pygame.QUIT:
 				pygame.quit()
@@ -201,20 +249,17 @@ def main():
 					sys.exit()
 			cam.events(event)
 
+		#Drawing background onto the screen
 		screen.fill((135, 206, 235))
-		horizon = (400 - (1200/math.pi)*cam.rot[0] - cam.pos[1]*10)
+		horizon = (400 - (1600/math.pi)*cam.rot[0] - cam.pos[1]*10)
 		pygame.draw.rect(screen, (0,123,12) , [0, horizon, 800, 800])
-		print(cam.pos[1])
 
-		'''
-		drawobjects([cube1.all,cube2.all,cube3.all,rock.all,ground1.all,
-					ground2.all,ground3.all,ground4.all])
-		'''
-
-		drawobjects(ground)
+		#Drawing all objects
+		drawobjects(meshes)
 
 		pygame.display.flip()
 
+		#key retrival for camera
 		key = pygame.key.get_pressed()
 		cam.update(dt,key)
 
