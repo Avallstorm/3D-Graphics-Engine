@@ -1,6 +1,8 @@
 import random
 from math import sqrt
 
+#Various classes that contain the information required for 3D models
+
 class Cube3D:
 	def __init__(self,size,pos):
 

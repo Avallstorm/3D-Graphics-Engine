@@ -204,7 +204,7 @@ if "cubes" in sys.argv:
 			meshes += [Cube3D(1,(i,0,j)).all]
 
 #Data for rock simulation
-elif "rock" in sys.argv:
+elif "rocks" in sys.argv:
 	rock1 = Rock3D((1,0,1)).all
 	rock2 = Rock3D((3,0,-1)).all
 	meshes += [rock1, rock2]
@@ -251,7 +251,10 @@ def main():
 
 		#Drawing background onto the screen
 		screen.fill((135, 206, 235))
-		horizon = (400 - (1600/math.pi)*cam.rot[0] - cam.pos[1]*10)
+		angle = cam.rot[0]
+		while(angle > 2*math.pi):
+			angle -= 2*math.pi
+		horizon = (400 - (1600/math.pi)*angle - cam.pos[1]*10)
 		pygame.draw.rect(screen, (0,123,12) , [0, horizon, 800, 800])
 
 		#Drawing all objects
